@@ -18,13 +18,13 @@ const findFileToWrite = (files) => {
     return null;
   }
 
-  const resFiles = files.filter(f => f.slice(0, filenameLength + 1) === resultFileName + "-");
+  const resFiles = files.filter(f => f.slice(0, filenameLength + 1) === resultFilename + "-");
   if (resFiles.length === 0) {
     return null;
   }
     
   const num = Math.max(resFiles.map(f => Number(f.slice(filenameLength + 1)))).toString();
-  return resultFileName + "-" + num;
+  return resultFilename + "-" + num;
 }
 
 const getLastSnapTime = (file) => {
@@ -35,7 +35,7 @@ const getLastSnapTime = (file) => {
 
 const nextFilename = (file) => {
   const nextNum = Number(file.slice(filenameLength + 1)) + 1;
-  return resultFileName + "-" + nextNum.toString();
+  return resultFilename + "-" + nextNum.toString();
 }
 
 const start = async () => {
