@@ -1,9 +1,13 @@
 import fs from "fs";
+import path from "path";
 import { getData } from "./getData.js";
 import moment from "moment";
+import dotenv from "dotenv";
 
-const login = "";
-const password = "";
+dotenv.config();
+
+const login = process.env.LOGIN;
+const password = process.env.PASSWORD;
 const url = "https://trade.oanda.com";
 const resultDir = "result";
 const resultFilename = "snapshot" // + number: snapshot-0, snapshot-1
@@ -35,9 +39,27 @@ const nextFilename = (file) => {
 }
 
 const start = async () => {
-  const files = fs.readdirSync(resultDir);
-  const file = findFileToWrite(files);
 
+  if (login === undefined || password === undefined) {
+    throw "Login or password not specified in .env file";
+  }
+
+  let files = null;
+  try {
+    files = fs.readdirSync(resultDir);
+  }
+  catch(err) {
+    if (err.code === "ENOENT") {
+      const data = await getData(url, login, password);
+      fs.mkdirSync(resultDir);
+      fs.writeFileSync(path.join(resultDir, resultFilename + "-0"), JSON.stringify(data));
+      return null;
+    }
+    throw err;
+  }
+  
+  const file = findFileToWrite(files);
+  
   if (file) {
     const lastSnapTime = getLastSnapTime(file);
     const data = await getData(url, login, password, lastSnapTime);
@@ -50,7 +72,7 @@ const start = async () => {
     }
   } else {
     const data = await getData(url, login, password);
-    fs.writeFileSync(path.join(resultDir, resultFileName + "-0"), JSON.stringify(data));
+    fs.writeFileSync(path.join(resultDir, resultFilename + "-0"), JSON.stringify(data));
   }
 }
 

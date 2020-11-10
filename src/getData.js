@@ -6,13 +6,15 @@ import moment from 'moment';
 const { Builder, By, until } = swd;
 const { Options } = fwd;
 
-//const ffOptions = new Options().setBinary("/usr/bin/firefox-bin");
-
 const createDriver = async () => {
-  let driver = await new Builder()
-      .forBrowser('firefox').build();
-//      .setFirefoxOptions(ffOptions).build();
-  return driver;
+  if (process.platform === "linux") {
+    const ffOptions = new Options().setBinary("/usr/bin/firefox-bin");
+    return new Builder()
+      .forBrowser('firefox')
+      .setFirefoxOptions(ffOptions).build();
+  } else {
+    return new Builder().forBrowser('firefox').build();
+  }
 }
 
 const logIn = async (driver, url, login, password) => {
@@ -56,7 +58,7 @@ const getSnapshotData = (source, containerId) => {
 
   const getAtts = (rects) => {
     return rects.map(r => {
-      return { x: r.getAttribute("x"), height: r.getAttribute("height") }
+      return r.getAttribute("height");
     })
   }
 
