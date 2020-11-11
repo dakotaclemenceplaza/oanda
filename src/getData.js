@@ -116,10 +116,35 @@ const filterByClasses = (tagsArray, classes) => {
 
 // Snapshot Time: October 27, 2020 9:10 PM &nbsp;&nbsp;
 const getSnapTime = (source) => {
+
+  const toEngDate = (d) => {
+    const months = {
+      "января": "January",
+      "февраля": "February",
+      "марта": "March",
+      "апреля": "April",
+      "мая": "May",
+      "июня": "June",
+      "июля": "July",
+      "августа": "August",
+      "сентября": "September",
+      "октября": "October",
+      "ноября": "November",
+      "декабря": "December"
+    }
+    const dArr = d.split(" ");
+    const day = dArr[0];
+    const month = dArr[1];
+    const year = dArr[2];
+    const time = dArr[4];
+    const engDate = [months[month], day, year, time];
+    return engDate.join(" ");
+  }
+  
   const html = nhp.parse(source);
   const rawDate = html.querySelector(".snapshot-date").innerHTML;
   const snapshotDate = rawDate.slice(15).split("").reverse().slice(13).reverse().join("");
-  return moment(snapshotDate, "LLL");
+    return moment(toEngDate(snapshotDate), "LLL");
 }
 
 const getCandlesNum = (source) => {
@@ -187,4 +212,4 @@ const getData = async (url, login, password, lsp) => {
   return data;
 }
 
-export { getData };
+export { getData,  };
