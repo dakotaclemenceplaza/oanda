@@ -1,7 +1,7 @@
 import nhp from 'node-html-parser';
 import swd from 'selenium-webdriver';
 import fwd from 'selenium-webdriver/firefox.js';
-import moment from 'moment';
+import { time } from './util.js';
 
 const { Builder, By, until } = swd;
 const { Options } = fwd;
@@ -144,7 +144,7 @@ const getSnapTime = (source) => {
   const html = nhp.parse(source);
   const rawDate = html.querySelector(".snapshot-date").innerHTML;
   const snapshotDate = rawDate.slice(15).split("").reverse().slice(13).reverse().join("");
-    return moment(toEngDate(snapshotDate), "LLL");
+    return time(toEngDate(snapshotDate));
 }
 
 const getCandlesNum = (source) => {
@@ -169,7 +169,7 @@ const hoverMouse = async (driver, candles, candleNum) => {
 
 }
 
-const getData = async (url, login, password, lsp) => {
+const getData = async (url, login, password, earliestTmpTime) => {
   let driver = await createDriver();
   await logIn(driver, url, login, password);
   const allButton = await driver.wait(until.elementLocated(By.xpath("//paper-item[@data-value='all']")), 10000);
@@ -181,21 +181,23 @@ const getData = async (url, login, password, lsp) => {
   const candlesNum = getCandlesNum(source);
   const candles = await getCandles(driver);
   
-  const lastSnapTime = lsp ? lsp : moment("October 27, 2019 9:10 PM", "LLL");
+  const lastSnapTime = earliestTmpTime ?
+	earliestTmpTime :
+	time("October 27, 2019 9:10 PM");
   
   const getIt = async (containerId, candlesNum) => {
     const source = await driver.getPageSource();
     const snapTime = getSnapTime(source);
 
-    if (snapTime.isAfter(lastSnapTime)) {
+    if (snapTime.isSameOrAfter(lastSnapTime)) {
       const snapData = getSnapshotData(source, containerId);
       if (candlesNum > 1) {
 	await hoverMouse(driver, candles, candlesNum - 1);
 	await driver.sleep(10000);
 	const rest = await getIt(containerId - 1, candlesNum -1);
-	return [...rest, { time: snapTime.format("LLL"), data: snapData }];
+	return [...rest, { time: snapTime, data: snapData }];
       } else {
-	return [{ time: snapTime.format("LLL"), data: snapData }];
+	return [{ time: snapTime, data: snapData }];
       }
     }
 
@@ -212,4 +214,4 @@ const getData = async (url, login, password, lsp) => {
   return data;
 }
 
-export { getData,  };
+export { getData };
