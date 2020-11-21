@@ -1,20 +1,22 @@
 import nhp from 'node-html-parser';
 import swd from 'selenium-webdriver';
-import fwd from 'selenium-webdriver/firefox.js';
+import cwd from 'selenium-webdriver/chrome.js';
 import { time } from './util.js';
 
 const { Builder, By, until } = swd;
-const { Options } = fwd;
+const { Options } = cwd;
 
 const createDriver = async () => {
-  if (process.platform === "linux") {
-    const ffOptions = new Options().setBinary("/usr/bin/firefox-bin");
-    return new Builder()
-      .forBrowser('firefox')
-      .setFirefoxOptions(ffOptions).build();
+  const headless = process.argv.includes("headless");
+  let cOptions = null;
+  if (headless) {
+    cOptions = new Options().addArguments("disable-gpu", "window-size=1920,1080", "headless");
   } else {
-    return new Builder().forBrowser('firefox').build();
+    cOptions = new Options().addArguments("disable-gpu", "window-size=1920,1080");
   }
+  return new Builder()
+    .forBrowser('chrome')
+    .setChromeOptions(cOptions).build();
 }
 
 const logIn = async (driver, url, login, password) => {
@@ -27,18 +29,12 @@ const logIn = async (driver, url, login, password) => {
   await pass.sendKeys(password);
   const loginButton = await driver.wait(until.elementLocated(By.id("loginButton")), 10000);
   await loginButton.click();
-
-/*    
-  await driver.wait(() => {
-    return driver.executeScript('return document.readyState').then(readyState => {
-      return readyState === 'complete';
-    });
-  }, 10000);*/
 }
 
 const logOut = async (driver) => {
   const signOut = await driver.wait(until.elementLocated(By.id("signOut")), 10000);
   await signOut.click();
+  // maybe wait a bit
 }
 
 /*
@@ -114,7 +110,6 @@ const filterByClasses = (tagsArray, classes) => {
   })
 }
 
-// Snapshot Time: October 27, 2020 9:10 PM &nbsp;&nbsp;
 const getSnapTime = (source) => {
 
   const toEngDate = (d) => {
@@ -164,18 +159,24 @@ const hoverMouse = async (driver, candles, candleNum) => {
   const theCandle = candles[candleNum - 1];
 //  await theCandle.click();
   await driver.actions().pause(1000).move({origin: theCandle}).perform();
-//  await driver.wait(until.elementLocated(By.id("chartContainer22")), 10000);
-//  await driver.sleep(5000);
-
 }
 
 const getData = async (url, login, password, earliestTmpTime) => {
   let driver = await createDriver();
   await logIn(driver, url, login, password);
+
   const allButton = await driver.wait(until.elementLocated(By.xpath("//paper-item[@data-value='all']")), 10000);
-  const allButtonVisible = await driver.wait(until.elementIsVisible(allButton));
-  //const allButton = await driver.wait(until.elementLocated(By.className("paper-item-0")), 10000);   
-  await allButtonVisible.click();
+  await driver.sleep(5000);
+
+  await allButton.click();
+  await driver.sleep(5000);
+
+  const dropDown = await driver.wait(until.elementLocated(By.xpath("//iron-icon[@icon='paper-dropdown-menu:arrow-drop-down']")), 10000);
+  await dropDown.click();
+  await driver.sleep(5000);
+
+  const nonCum = await driver.wait(until.elementLocated(By.xpath("//paper-item[@data-value='nc']")), 10000);
+  await nonCum.click();
 
   const source = await driver.getPageSource();
   const candlesNum = getCandlesNum(source);
@@ -191,9 +192,9 @@ const getData = async (url, login, password, earliestTmpTime) => {
 
     if (snapTime.isSameOrAfter(lastSnapTime)) {
       const snapData = getSnapshotData(source, containerId);
-      if (candlesNum > 1) {
+      if (candlesNum > 20) {
 	await hoverMouse(driver, candles, candlesNum - 1);
-	await driver.sleep(10000);
+	await driver.sleep(5000);
 	const rest = await getIt(containerId - 1, candlesNum -1);
 	return [...rest, { time: snapTime, data: snapData }];
       } else {

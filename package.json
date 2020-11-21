@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js",
+    "start-headless": "node headless src/index.js",
     "test": "jest"
   },
   "type": "module",
