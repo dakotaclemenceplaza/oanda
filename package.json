@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "start-headless": "node src/index.js headless",
+    "start": "node main.js",
+    "start-headless": "node main.js headless",
     "test": "jest"
   },
   "type": "module",

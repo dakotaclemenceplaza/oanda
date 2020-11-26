@@ -182,15 +182,11 @@ const getData = async (url, login, password, earliestTmpTime) => {
   const candlesNum = getCandlesNum(source);
   const candles = await getCandles(driver);
   
-  const lastSnapTime = earliestTmpTime ?
-	earliestTmpTime :
-	time("October 27, 2019 9:10 PM");
-  
   const getIt = async (containerId, candlesNum) => {
     const source = await driver.getPageSource();
     const snapTime = getSnapTime(source);
 
-    if (snapTime.isSameOrAfter(lastSnapTime)) {
+    if (snapTime.isSameOrAfter(earliestTmpTime)) {
       const snapData = getSnapshotData(source, containerId);
       if (candlesNum > 20) {
 	await hoverMouse(driver, candles, candlesNum - 1);

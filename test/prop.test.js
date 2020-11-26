@@ -1,5 +1,5 @@
 import fc from "fast-check";
-import { sort, breakResultAndRest, breakMore, doIt } from "../src/index.js";
+import { sort, breakTempAtEarliestNewTime, breakConsecutive, doIt } from "../src/index.js";
 import { time, cloneTime, uniqueDates } from "../src/util.js";
 
 const dateRange = { min: new Date('2020-11-01 09:00'), max: new Date('2020-11-05 09:00') };
@@ -28,12 +28,12 @@ test('sorting dates', () => {
     }))
 });
 
-test('breaking dates array in two', () => {
+test('breaking temp dates array in two', () => {
   fc.assert(
     fc.property(fc.tuple(fcDate, fcDateArr), tuple => {
       const date = tuple[0];
       const dates = sort(tuple[1]);
-      const [result, rest] = breakResultAndRest(dates, date);
+      const [result, rest] = breakTempAtEarliestNewTime(dates, date);
       const b = result.every((d) => rest.every((dd) => d.time.isBefore(dd.time)));
       expect(b).toBe(true);
       const before = dates.filter((d) => d.time.isBefore(date));
@@ -44,7 +44,7 @@ test('breaking dates array in two', () => {
     }))
 });
 
-test('breakMore works', () => {
+test('breaking consecutive dates array', () => {
   let st = time(new Date('2020-11-01 09:00'));
   let dates = [];
   for (let i = 0; i < 15; i++) {
@@ -56,13 +56,13 @@ test('breakMore works', () => {
       dates.push({ time: cloneTime(st.add(20, 'm')) });
     }
   }
-  const [x, y] = breakMore(dates);
+  const [x, y] = breakConsecutive(dates);
   expect(x.length).toBe(8);
   expect(y.length).toBe(7);
 });
 
 
-test("complicated property tests", () => {
+test("doIt", () => {
 
   // add weekend nulls
   const start = time(new Date('2020-11-01 09:00'));
