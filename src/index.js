@@ -123,7 +123,9 @@ const start = async () => {
   
   const [toResult, toTemp] = doIt(tempData, newData);
 
-  fs.writeFileSync(path.join(resultDir, tempFilename), JSON.stringify(toTemp));
+  fs.writeFileSync(path.join(resultDir, tempFilename), JSON.stringify(toTemp.map(d => {
+    return { time: format(d.time), data: d.data };
+  })));
 
   writeResult(toResult);
 }
