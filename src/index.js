@@ -39,12 +39,16 @@ const getTempData = () => {
 }
 
 const writeResult = (res) => {
-  const date = format(res.time);
-  const oPos = res.data.orderPositive.join(" ");
-  const oNeg = res.data.orderNegative.join(" ");
-  const pPos = res.data.positionPositive.join(" ");
-  const pNeg = res.data.positionNegative.join(" ");
-  const result = `${date}\norder positive ${oPos}\norder negative ${oNeg}\nposition potivie ${pPos}\nposition negative ${pNeg}`;
+  const prepare = (res) => {
+    const date = format(res.time);
+    const oPos = res.data.orderPositive.join(" ");
+    const oNeg = res.data.orderNegative.join(" ");
+    const pPos = res.data.positionPositive.join(" ");
+    const pNeg = res.data.positionNegative.join(" ");
+    const result = `${date}\norder positive ${oPos}\norder negative ${oNeg}\nposition potivie ${pPos}\nposition negative ${pNeg}`;
+    return result;
+  }
+  const result = res.map(d => prepare(d)).join("\n");
   fs.appendFileSync(path.join(resultDir, resultFilename), result);
 }
 
