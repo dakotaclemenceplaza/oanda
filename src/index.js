@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { getData } from "./getData.js";
-import { time, format, cloneTime, uniqueDates } from "./util.js";
+import { time, format, cloneTime, uniqueSortedByDate } from "./util.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -12,17 +12,6 @@ const url = "https://trade.oanda.com";
 const resultDir = "result";
 const resultFilename = "snapshots"
 const tempFilename = "temp";
-
-const sort = (data) => {
-  return data.sort((a, b) => {
-    if (a.time.isBefore(b.time)) {
-      return -1;
-    } else if (a.time.isSame(b.time)) {
-      return 0;
-    }
-    return 1;
-  });
-}
 
 const getTempData = () => {
   try {
@@ -88,7 +77,7 @@ const doIt = (tempData, newData) => {
   }
   
   const [oldToResult, restOfTemp] = breakTempAtEarliestNewTime(tempData, earliestNewTime);
-  const newTemp = uniqueDates(sort([...restOfTemp, ...newData]));
+  const newTemp = uniqueSortedByDate([...restOfTemp, ...newData]);
   const [consecutiveToResult, toTemp] = breakConsecutive(newTemp);
   const toResult = [...oldToResult, ...consecutiveToResult];
   return [toResult, toTemp];
@@ -130,4 +119,4 @@ const start = async () => {
   writeResult(toResult);
 }
 
-export { sort, breakTempAtEarliestNewTime, breakConsecutive, doIt, start };
+export { breakTempAtEarliestNewTime, breakConsecutive, doIt, start };

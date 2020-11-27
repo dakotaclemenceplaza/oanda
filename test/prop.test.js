@@ -1,6 +1,6 @@
 import fc from "fast-check";
-import { sort, breakTempAtEarliestNewTime, breakConsecutive, doIt } from "../src/index.js";
-import { time, cloneTime, uniqueDates } from "../src/util.js";
+import { breakTempAtEarliestNewTime, breakConsecutive, doIt } from "../src/index.js";
+import { time, cloneTime, sort, uniqueSortedByDate } from "../src/util.js";
 
 const dateRange = { min: new Date('2020-11-01 09:00'), max: new Date('2020-11-05 09:00') };
 const fcDate = fc.date(dateRange).map(d => { return { time: time(d) } });
@@ -93,12 +93,12 @@ test("doIt", () => {
 	  }
 	}
 
-	testResult = uniqueDates([...testResult, ...fakeData]);
+	testResult = uniqueSortedByDate([...testResult, ...fakeData]);
 	// maybe cut fakeSnapshots
 	return fakeData;
       }
 
-      const fct = sort(uniqueDates(fakeCurrentTimes.map(d => { return { time: time(d) } })));
+      const fct = uniqueSortedByDate(fakeCurrentTimes.map(d => { return { time: time(d) } }));
       for (let i = 0; i < fct.length; i++) {
 	let earliestTmpTime = null;
 	if (fakeTempData.length !== 0) {
