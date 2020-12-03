@@ -112,6 +112,7 @@ const filterByClasses = (tagsArray, classes) => {
 
 const getSnapTime = (source) => {
 
+/* don't need this
   const toEngDate = (d) => {
     const months = {
       "января": "January",
@@ -127,6 +128,7 @@ const getSnapTime = (source) => {
       "ноября": "November",
       "декабря": "December"
     }
+
     const dArr = d.split(" ");
     const day = dArr[0];
     const month = dArr[1];
@@ -135,11 +137,11 @@ const getSnapTime = (source) => {
     const engDate = [months[month], day, year, time];
     return engDate.join(" ");
   }
-  
+*/  
   const html = nhp.parse(source);
   const rawDate = html.querySelector(".snapshot-date").innerHTML;
   const snapshotDate = rawDate.slice(15).split("").reverse().slice(13).reverse().join("");
-    return time(toEngDate(snapshotDate));
+  return time(snapshotDate);
 }
 
 const getCandlesNum = (source) => {
@@ -177,7 +179,8 @@ const getData = async (url, login, password, earliestTmpTime) => {
 
   const nonCum = await driver.wait(until.elementLocated(By.xpath("//paper-item[@data-value='nc']")), 10000);
   await nonCum.click();
-
+  await driver.sleep(5000);
+  
   const source = await driver.getPageSource();
   const candlesNum = getCandlesNum(source);
   const candles = await getCandles(driver);
@@ -188,7 +191,7 @@ const getData = async (url, login, password, earliestTmpTime) => {
 
     if (snapTime.isSameOrAfter(earliestTmpTime)) {
       const snapData = getSnapshotData(source, containerId);
-      if (candlesNum > 20) {
+      if (candlesNum > 1) {
 	await hoverMouse(driver, candles, candlesNum - 1);
 	await driver.sleep(5000);
 	const rest = await getIt(containerId - 1, candlesNum -1);

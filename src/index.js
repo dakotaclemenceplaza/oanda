@@ -34,11 +34,12 @@ const writeResult = (res) => {
     const oNeg = res.data.orderNegative.join(" ");
     const pPos = res.data.positionPositive.join(" ");
     const pNeg = res.data.positionNegative.join(" ");
-    const result = `${date}\norder positive ${oPos}\norder negative ${oNeg}\nposition potivie ${pPos}\nposition negative ${pNeg}`;
+    const result = `${date}\norder positive ${oPos}\norder negative ${oNeg}\nposition potivie ${pPos}\nposition negative ${pNeg}\n`;
     return result;
   }
   const result = res.map(d => prepare(d)).join("\n");
   fs.appendFileSync(path.join(resultDir, resultFilename), result);
+  fs.writeFileSync(path.join(resultDir, "tempTime"), format(res[res.length-1].time));
 }
 
 const breakTempAtEarliestNewTime = (tmp, t) => {
@@ -102,12 +103,16 @@ const start = async () => {
   const tempData = getTempData();
 
   let earliestTmpTime = null;
-  if (tempData.length !== 0) {
-    earliestTmpTime = tempData[0].time;
-  } else {
-    earliestTmpTime = time("October 27, 2019 9:10 PM");
+  try {
+    earliestTmpTime = time(fs.readFileSync(path.join(resultDir, "tempTime")));
+  } catch(err) {
+    if (err.code === "ENOENT") {
+      earliestTmpTime = time("October 27, 2019 9:10 PM");
+    } else {
+      throw err;
+    }
   }
-  
+
   const newData = await getData(url, login, password, earliestTmpTime);
   
   const [toResult, toTemp] = doIt(tempData, newData);
